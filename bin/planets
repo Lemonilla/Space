@@ -1,0 +1,30 @@
+0,0,0,0,0,0,0,0, How to read: x,y,z,name,danger,grav,bound_sun_name
+0,0,0,0,0,0,0,0,   danger 0 = can't land, 1 = can safely land, 2 = crash
+0,0,0,0,0,0,0,0,   bound_sun_name=0 if self bound
+0,0,0,0,0,0,0,0,   smaller the grav the harder the pull
+0,0,0,0,0,0,0,0, 1 pt ~ 100,000 miles
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0, Sol System
+0,0,0,0,0,0,0,0,
+390000,470000,-38000,Sol,2,1,0
+390000,470360,-37900,Mercury,1,50,Sol
+390600,470070,-38100,Venus,1,30,Sol
+390629,469700,-38070,Earth,1,10,Sol
+388584,470000,-38030,Mars,1,10,Sol
+394000,470836,-37970,Jupiter,0,5,Sol
+381118,469990,-38000,Saturn,0,7,Sol
+372136,469900,-37920,Uranus,0,20,Sol
+390000,442012,-38000,Neptune,0,20,Sol
+426662,470000,-40000,Pluto,1,100,Sol
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0, Elbei/Ambon System
+0,0,0,0,0,0,0,0,
+-950,-950,11,Elbei/Ambon,0,0,0
+-1000,-1000,10,Elbei,2,2,Elbei/Ambon
+-900,-900,12,Ambon,2,2,Elbei/Ambon
+10,10,100,Abron,1,10,Elbei/Ambon
+-150,-150,50,Upien,0,15,Elbei/Ambon

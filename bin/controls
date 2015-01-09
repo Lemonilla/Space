@@ -1,0 +1,9 @@
+move_+_y_theta=w
+move_-_y_theta=s
+move_+_x_theta=d
+move_-_x_theta=a
+move_+_vel=o
+move_-_vel=l
+move_ping=p
+move_quit=t
+diplay_ex=g
