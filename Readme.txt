@@ -1,10 +1,11 @@
 Todo:
-* Write text for each planet
-     - Encrypt\translate certain systems
-* Add >= 4 solar systems
-* Add asteroid fields
-* Reduce delay be porting large processes to faster languages especially
-     - chkcrsh
-     - grav
-* Balance landing and crashing velocity numbers
-* Add orbits to planets (circular)
+<orbit.py>
+	Finish
+	Port to VBScript for ease of use
+<planets>
+	Add 4+ solar systems
+	Add asteroid fields
+	Add text for each landable planet
+Balancing
+	Edit landing\crashing numbers 
+	

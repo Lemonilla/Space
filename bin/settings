@@ -3,3 +3,4 @@ delay=50
 display=1
 wvec_lim=2
 crash=1
+move_dis=1
