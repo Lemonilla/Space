@@ -12,6 +12,78 @@ def ppprint(arr):
 		print ppprint_tmp
 		del(ppprint_tmp)
 
+
+
+def MovePlanet_stdout(move_planet,move_Sun):
+	x1 = float(move_planet[0])
+	y1 = float(move_planet[1])
+	z1 = float(move_planet[2])
+	x2 = float(move_Sun[0])
+	y2 = float(move_Sun[1])
+	z2 = float(move_Sun[2])
+
+	# Find axis of revolution via theta_x and theta_y
+	# theta_x is the angle measurment off the x axis
+	# theta_y is the angle measurement off the y axis
+	# All points should be 90* from the axis of revolution
+
+	# angles are in radian, theta[0] is x, theta[1] is y
+	theta = [2 * math.pi - math.acos((x1-x2)/math.sqrt((x1-x2)*(x1-x2)+(y1-y2)*(y1-y2)+(z1-z2)*(z1-z2))),2 * math.pi - math.atan((z1-z2)/(y1-y2))]
+
+
+	# formula for orbit ellipse: (viewing x,y 2D plane)
+	# ((x-k)*cos(t)+(y-h)*sin(t))^2/a^2 + (y-h)*cos(t)-(x-k)*sin(t))^2/b^2 = 1
+	# where:
+	# t = acos((dis^2+dis_1^2+1)/2*dis)
+	# dis_1 = distance from x2,y2 to x1+1,y1
+	a = math.sqrt((x1-x2)*(x1-x2)+(y1-y2)*(y1-y2)+(z1-z2)*(z1-z2))
+	b = math.sqrt((x1-x2)*(x1-x2)+(y1-y2)*(y1-y2))
+	dis_1 = math.sqrt((x2-(x1+1))*(x2-(x1+1))+(y2-y1)*(y2-y1))
+	dis = math.sqrt((x2-(x1))*(x2-(x1))+(y2-y1)*(y2-y1))
+	t = math.acos((dis*dis-dis_1*dis_1-1)/(2*dis))
+	try:
+		g = sys.argv[2]
+	except:
+		g = math.pi/4
+
+
+	# ((cos(t)*cos(t))/(a*a)+(sin(t)*sin(t))/(b*b))*x*x)-2*cos(t)*sin(t)*(1/(a*a)-1/(b*b))*y*x+((cos(t)*cos(t))/(a*a)+(sin(t)*sin(t))/(b*b))*y*y=1
+	#
+	# from http://www.quickmath.com
+	# x = (a*b)/(sqrt(a*a*tan(g)*tan(g)*sin(t)*sin(t)-2*b*b*tan(g)*cos(t)*sin(t)+2*a*a*tan(g)*cos(t)*sin(t)+b*b*tan(g)*tan(g)*cos(t)*cos(t)+b*b*cos(t)*cos(t)))
+	# x = -(a*b)/(sqrt(a*a*tan(g)*tan(g)*sin(t)*sin(t)-2*b*b*tan(g)*cos(t)*sin(t)+2*a*a*tan(g)*cos(t)*sin(t)+b*b*tan(g)*tan(g)*cos(t)*cos(t)+b*b*cos(t)*cos(t)))
+	# y = (a*b*tan(g))/(sqrt(a*a*tan(g)*tan(g)*sin(t)*sin(t)-2*b*b*tan(g)*cos(t)*sin(t)+2*a*a*tan(g)*cos(t)*sin(t)+b*b*tan(g)*tan(g)*cos(t)*cos(t)+b*b*cos(t)*cos(t)))
+	# y = -(a*b*tan(g))/(sqrt(a*a*tan(g)*tan(g)*sin(t)*sin(t)-2*b*b*tan(g)*cos(t)*sin(t)+2*a*a*tan(g)*cos(t)*sin(t)+b*b*tan(g)*tan(g)*cos(t)*cos(t)+b*b*cos(t)*cos(t)))
+	#
+	# where g = degrees of rotation and the sign is (+) if pi/2 > g > -pi/2
+	x0 = (a*b)/(math.sqrt(a*a*math.tan(g)*math.tan(g)*math.sin(t)*math.sin(t)-2*b*b*math.tan(g)*math.cos(t)*math.sin(t)+2*a*a*math.tan(g)*math.cos(t)*math.sin(t)+b*b*math.tan(g)*math.tan(g)*math.cos(t)*math.cos(t)+b*b*math.cos(t)*math.cos(t)))
+	# x0 = -(a*b)/(math.sqrt(a*a*math.tan(g)*math.tan(g)*math.sin(t)*math.sin(t)-2*b*b*math.tan(g)*math.cos(t)*math.sin(t)+2*a*a*math.tan(g)*math.cos(t)*math.sin(t)+b*b*math.tan(g)*math.tan(g)*math.cos(t)*math.cos(t)+b*b*math.cos(t)*math.cos(t)))
+	y0 = (a*b*math.tan(g))/(math.sqrt(a*a*math.tan(g)*math.tan(g)*math.sin(t)*math.sin(t)-2*b*b*math.tan(g)*math.cos(t)*math.sin(t)+2*a*a*math.tan(g)*math.cos(t)*math.sin(t)+b*b*math.tan(g)*math.tan(g)*math.cos(t)*math.cos(t)+b*b*math.cos(t)*math.cos(t)))
+	# x0 = -(a*b*math.tan(g))/(math.sqrt(a*a*math.tan(g)*math.tan(g)*math.sin(t)*math.sin(t)-2*b*b*math.tan(g)*math.cos(t)*math.sin(t)+2*a*a*math.tan(g)*math.cos(t)*math.sin(t)+b*b*math.tan(g)*math.tan(g)*math.cos(t)*math.cos(t)+b*b*math.cos(t)*math.cos(t)))
+
+	# z0 is then determined by this equation
+	# dis = math.sqrt((x1-x0)*(x1-x0)+(y1-y0)*(y1-y0)+(z1-z0)*(z1-z0))
+	# from http://www.quickmath.com
+
+	temp=-y0*-y0+2*y1*y0-y1*y1-x0*x0+2*x1*x0-x1*x1+dis*dis
+	if temp < 0:
+		temp=-temp
+
+	try:
+		z0=z1-math.sqrt(temp)
+		#if math.sqrt((x0-x1)*(x0-x1)+(x0-x1)*(x0-x1)+(x0-x1)*(x0-x1)) < 0:
+	except:
+		z0=z1+math.sqrt(temp)
+
+
+	# the new coordinate for the planet is now x0,y0,z0 instead of x,y,z
+	print move_planet[3]
+	print "(%d,%d,%d)" % (x1,y1,z1)
+	print "(%d,%d,%d)" % (x0,y0,z0)
+	print "\n"
+
+
+
 # Import planets file into 2D Array named 'planets'
 # And strip commented lines for faster looping
 # How to read array: x,y,z,name,danger,grav,bound_sun_name
@@ -27,54 +99,17 @@ with open(sys.argv[1],'r') as x:
 x.close()
 
 
-# debug, remove later
-ppprint(planets)
-x1=0
-x2=2
-y1=0
-y2=2
-z1=0
-z2=2
+for planet in planets:
+	if planet[6] == "0":
+		pass
+	else:
+		for Sun in planets:
+			if Sun[3] == planet[6]:
+				MovePlanet_stdout(planet,Sun)
+			else:
+				pass
 
 
-# Find axis of revolution via theta_x and theta_y
-# theta_x is the angle measurment off the x axis
-# theta_y is the angle measurement off the y axis
-# All points should be 90* from the axis of revolution
-
-# angles are in radian, theta[0] is x, theta[1] is y
-theta = [2 * math.pi - math.acos((x1-x2)/math.sqrt((x1-x2)*(x1-x2)+(y1-y2)*(y1-y2)+(z1-z2)*(z1-z2))),2 * math.pi - math.atan((z1-z2)/(y1-y2))]
-
-print "xrad",theta[0]
-print "yrad",theta[1]
-print "xdeg",theta[0]/(2*math.pi)*360
-print "ydeg",theta[1]/(2*math.pi)*360
-print "\n"
-
-
-# formula for orbit ellipse: (viewing x,y 2D plane)
-# ((x-k)*cos(t)+(y-h)*sin(t))^2/a^2 + (y-h)*cos(t)-(x-k)*sin(t))^2/b^2 = 1
-# where:
-# t = acos((dis^2+dis_1^2+1)/2*dis)
-# dis_1 = distance from x2,y2 to x1+1,y1
-a = math.sqrt((x1-x2)*(x1-x2)+(y1-y2)*(y1-y2)+(z1-z2)*(z1-z2))
-b = math.sqrt((x1-x2)*(x1-x2)+(y1-y2)*(y1-y2))
-dis_1 = math.sqrt((x2-(x1+1))*(x2-(x1+1))+(y2-y1)*(y2-y1))
-dis = math.sqrt((x2-(x1))*(x2-(x1))+(y2-y1)*(y2-y1))
-t = math.acos((dis*dis-dis_1*dis_1-1)/(2*dis))
-r = sys.argv[2]
-r = 1
-
-print "dis:%d\ndis_1:%d\nt:%d\ns:%d" % (dis,dis_1,t,s)
-
-# Need to solve this equation for x0 and then for y0 to get coordinates
-# x^2+y^2-r^2 = ((x-x1)*math.cos(t)+(y-y1)*math.sin(t))^2/a+((y-y1)*math.cos(t)-(x-x1)*math.sin(t))^2/b-1
-
-
-# z0 is then determined by this equation
-# dis = math.sqrt((x1-x0)*(x1-x0)+(y1-y0)*(y1-y0)+(z1-z0)*(z1-z0))
-
-# the new coordinate for the planet is now x0,y0,z0 instead of x,y,z
 
 
 
