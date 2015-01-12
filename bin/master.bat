@@ -16,7 +16,7 @@ exit /b 0
 
 :l
 
-REM setup Var
+:: setup Var
 set cmd=.
 if exist cmd (
 	set /p cmd=<cmd 
@@ -24,22 +24,25 @@ if exist cmd (
 	echo . >cmd
 )
 
-REM Start moving
+:: Start moving
 call mov.bat
 
-REM read commands
+:: orbit planets
+:: orbit.py "%cd%\planets_c" %move_dis%
+
+:: read commands
 call com.bat
 
-REM start view
+:: start view
 call disp.bat
 
-REM apply gravity
+:: apply gravity
 call grav.bat
 
-REM check crash
+:: check crash
 call chkcrsh.bat
 
-REM wait
+:: wait
 timeout /t 1 /nobreak >nul
 
 goto :l
