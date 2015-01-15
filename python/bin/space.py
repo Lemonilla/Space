@@ -23,8 +23,7 @@ def ThreadingControl():
 		stack.append(TC_cmd)
 
 def clscn():
-	# os.system('cls')
-	pass
+	os.system('cls')
 
 def move():
 	status[0] = round((float(status[3])*math.cos(float(status[5]))*math.cos(float(status[4]))),2)+float(status[0])
@@ -111,7 +110,8 @@ def crash():
 	pass
 
 def endGame():
-	print "Saving Game, Please Wait. . ."
+	clscn()
+	print "\n  Saving Game, Please Wait. . ."
 	save = open(sys.argv[1],'w')
 	save.write(str(status[0]))
 	save.write(",")
