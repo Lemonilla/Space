@@ -22,14 +22,6 @@ def MovePlanet_stdout(move_planet,move_Sun):
 	y2 = float(move_Sun[1])
 	z2 = float(move_Sun[2])
 
-	# Find axis of revolution via theta_x and theta_y
-	# theta_x is the angle measurment off the x axis
-	# theta_y is the angle measurement off the y axis
-	# All points should be 90* from the axis of revolution
-
-	# angles are in radian, theta[0] is x, theta[1] is y
-	theta = [2 * math.pi - math.acos((x1-x2)/math.sqrt((x1-x2)*(x1-x2)+(y1-y2)*(y1-y2)+(z1-z2)*(z1-z2))),2 * math.pi - math.atan((z1-z2)/(y1-y2))]
-
 
 	# formula for orbit ellipse: (viewing x,y 2D plane)
 	# ((x-k)*cos(t)+(y-h)*sin(t))^2/a^2 + (y-h)*cos(t)-(x-k)*sin(t))^2/b^2 = 1
@@ -40,56 +32,129 @@ def MovePlanet_stdout(move_planet,move_Sun):
 	b = math.sqrt((x1-x2)*(x1-x2)+(y1-y2)*(y1-y2))
 	dis_1 = math.sqrt((x2-(x1+1))*(x2-(x1+1))+(y2-y1)*(y2-y1))
 	dis = math.sqrt((x2-(x1))*(x2-(x1))+(y2-y1)*(y2-y1))
-	t = math.acos((dis*dis-dis_1*dis_1-1)/(2*dis))
+
+
+	# Fix out of bounds by lowering it into range and adding pi after computation
+	try:
+		t = math.acos((dis*dis-dis_1*dis_1-1)/(2*dis))
+	except:
+		t = math.acos((dis*dis-dis_1*dis_1-1)/(2*dis)+1)+math.pi
+
+	# Assign g as 2nd argument
 	try:
 		g = sys.argv[2]
 	except:
 		g = math.pi/4
 
 
+	# Print Debug Statement:
+	print "((cos(",
+	print t,
+	print ")*cos(",
+	print t,
+	print "))/(",
+	print a,
+	print "*",
+	print a,
+	print ")+(sin(",
+	print t,
+	print ")*sin(",
+	print t,
+	print "))/(",
+	print b,
+	print "*",
+	print b,
+	print "))*",
+	print "x",
+	print "*",
+	print "x",
+	print ")-2*cos(",
+	print t,
+	print ")*sin(",
+	print t,
+	print ")*(1/(",
+	print a,
+	print "*",
+	print a,
+	print ")-1/(",
+	print b,
+	print "*",
+	print b,
+	print "))*",
+	print "y",
+	print "*",
+	print "x",
+	print "+((cos(",
+	print t,
+	print ")*cos(",
+	print t,
+	print "))/(",
+	print a,
+	print "*",
+	print a,
+	print ")+(sin(",
+	print t,
+	print ")*sin(",
+	print t,
+	print "))/(",
+	print b,
+	print "*",
+	print b,
+	print "))*",
+	print "y",
+	print "*",
+	print "y",
+	print "=1";
+
+
+
 	# ((cos(t)*cos(t))/(a*a)+(sin(t)*sin(t))/(b*b))*x*x)-2*cos(t)*sin(t)*(1/(a*a)-1/(b*b))*y*x+((cos(t)*cos(t))/(a*a)+(sin(t)*sin(t))/(b*b))*y*y=1
-	#
-	# from http://www.quickmath.com
-	# x = (a*b)/(sqrt(a*a*tan(g)*tan(g)*sin(t)*sin(t)-2*b*b*tan(g)*cos(t)*sin(t)+2*a*a*tan(g)*cos(t)*sin(t)+b*b*tan(g)*tan(g)*cos(t)*cos(t)+b*b*cos(t)*cos(t)))
-	# x = -(a*b)/(sqrt(a*a*tan(g)*tan(g)*sin(t)*sin(t)-2*b*b*tan(g)*cos(t)*sin(t)+2*a*a*tan(g)*cos(t)*sin(t)+b*b*tan(g)*tan(g)*cos(t)*cos(t)+b*b*cos(t)*cos(t)))
-	# y = (a*b*tan(g))/(sqrt(a*a*tan(g)*tan(g)*sin(t)*sin(t)-2*b*b*tan(g)*cos(t)*sin(t)+2*a*a*tan(g)*cos(t)*sin(t)+b*b*tan(g)*tan(g)*cos(t)*cos(t)+b*b*cos(t)*cos(t)))
-	# y = -(a*b*tan(g))/(sqrt(a*a*tan(g)*tan(g)*sin(t)*sin(t)-2*b*b*tan(g)*cos(t)*sin(t)+2*a*a*tan(g)*cos(t)*sin(t)+b*b*tan(g)*tan(g)*cos(t)*cos(t)+b*b*cos(t)*cos(t)))
-	#
 	# where g = degrees of rotation and the sign is (+) if pi/2 > g > -pi/2
 	x0 = (a*b)/(math.sqrt(a*a*math.tan(g)*math.tan(g)*math.sin(t)*math.sin(t)-2*b*b*math.tan(g)*math.cos(t)*math.sin(t)+2*a*a*math.tan(g)*math.cos(t)*math.sin(t)+b*b*math.tan(g)*math.tan(g)*math.cos(t)*math.cos(t)+b*b*math.cos(t)*math.cos(t)))
-	# x0 = -(a*b)/(math.sqrt(a*a*math.tan(g)*math.tan(g)*math.sin(t)*math.sin(t)-2*b*b*math.tan(g)*math.cos(t)*math.sin(t)+2*a*a*math.tan(g)*math.cos(t)*math.sin(t)+b*b*math.tan(g)*math.tan(g)*math.cos(t)*math.cos(t)+b*b*math.cos(t)*math.cos(t)))
 	y0 = (a*b*math.tan(g))/(math.sqrt(a*a*math.tan(g)*math.tan(g)*math.sin(t)*math.sin(t)-2*b*b*math.tan(g)*math.cos(t)*math.sin(t)+2*a*a*math.tan(g)*math.cos(t)*math.sin(t)+b*b*math.tan(g)*math.tan(g)*math.cos(t)*math.cos(t)+b*b*math.cos(t)*math.cos(t)))
-	# x0 = -(a*b*math.tan(g))/(math.sqrt(a*a*math.tan(g)*math.tan(g)*math.sin(t)*math.sin(t)-2*b*b*math.tan(g)*math.cos(t)*math.sin(t)+2*a*a*math.tan(g)*math.cos(t)*math.sin(t)+b*b*math.tan(g)*math.tan(g)*math.cos(t)*math.cos(t)+b*b*math.cos(t)*math.cos(t)))
+	
 
 	# z0 is then determined by this equation
 	# dis = math.sqrt((x1-x0)*(x1-x0)+(y1-y0)*(y1-y0)+(z1-z0)*(z1-z0))
 	# from http://www.quickmath.com
-
 	temp=-y0*-y0+2*y1*y0-y1*y1-x0*x0+2*x1*x0-x1*x1+dis*dis
 	if temp < 0:
 		temp=-temp
-
 	try:
 		z0=z1-math.sqrt(temp)
-		#if math.sqrt((x0-x1)*(x0-x1)+(x0-x1)*(x0-x1)+(x0-x1)*(x0-x1)) < 0:
 	except:
 		z0=z1+math.sqrt(temp)
 
 
-	# the new coordinate for the planet is now x0,y0,z0 instead of x,y,z
+	# the new coordinate for the planet is now x0,y0,z0
 	print move_planet[3]
-	print "(%d,%d,%d)" % (x1,y1,z1)
-	print "(%d,%d,%d)" % (x0,y0,z0)
-	print "\n"
+	print "(",
+	print x1,
+	print ",",
+	print y1,
+	print ",",
+	print z1,
+	print ")\n(",
+	print x2,
+	print ",",
+	print y2,
+	print ",",
+	print z2,
+	print ")\n(",
+	print x0,
+	print ",",
+	print y0,
+	print ",",
+	print z0,
+	print ")"
 
 
+# Debug statement
+MovePlanet_stdout([0,0,0,"orgin"],[10,10,10,"1x1x1"])
+'''
 
 # Import planets file into 2D Array named 'planets'
 # And strip commented lines for faster looping
-# How to read array: x,y,z,name,danger,grav,bound_sun_name
-#   danger 0 = can't land, 1 = can safely land, 2 = crash
-#   bound_sun_name=0 if self bound
-#   smaller the grav the harder the pull
 with open(sys.argv[1],'r') as x:
 	planets = []
 	for line in x:
@@ -99,6 +164,10 @@ with open(sys.argv[1],'r') as x:
 x.close()
 
 
+
+
+# Loop through planets moving each around their bound Sun
+# If the bounds sun's value is "0", this is a sun and should be skipped
 for planet in planets:
 	if planet[6] == "0":
 		pass
@@ -109,10 +178,7 @@ for planet in planets:
 			else:
 				pass
 
-
-
-
-
+'''
 
 
 # After a new point is determined, rewrite the process to loop through the planets array
