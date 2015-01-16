@@ -9,10 +9,11 @@ import math
 
 
 global stack
-stack = ['.','.']
+stack = ['.']
 pi = math.pi
-loop=True
 
+
+###########################################################################################################################################
 
 
 # Thread function for controller, adds key to stack
@@ -22,13 +23,17 @@ def ThreadingControl():
 		TC_cmd = getch()
 		stack.append(TC_cmd)
 
+
 def clscn():
+	#return 0
 	os.system('cls')
+
 
 def move():
 	status[0] = round((float(status[3])*math.cos(float(status[5]))*math.cos(float(status[4]))),2)+float(status[0])
-	status[1] = round((float(status[3])*math.cos(float(status[5]))*math.sin(float(status[4]))),2)+float(status[2])
-	status[2] = round((float(status[3])*math.sin(float(status[5]))),2)+float(status[1])
+	status[1] = round((float(status[3])*math.cos(float(status[5]))*math.sin(float(status[4]))),2)+float(status[1])
+	status[2] = round((float(status[3])*math.sin(float(status[5]))),2)+float(status[2])
+
 
 def contr():
 	while True:
@@ -53,8 +58,14 @@ def contr():
 			pass # ping command not yet written
 		if cmdp == controls[7]:
 			endGame()
+		if cmdp == controls[8]:
+			pass # no idea what this command does
 		if cmdp <> '.':
 			disp()
+
+		# debug backdoor
+		if cmdp == 'N':
+			crash("Adminius")
 
 
 def disp():
@@ -84,6 +95,24 @@ def disp():
 
 	while time.clock() - tim < 0:
 		pass
+
+# Map
+#  #  #  #  #  #  #  #  #  #  #  #  #  #  #
+#  .  .  .  .  .  .  .  .  .  .  .  .  .  .
+#  .  .  .  .  .  .  .  .  .  .  .  .  .  .
+#  .  .  .  .  .  .  .  .  .  .  .  .  .  .
+#  .  .  .  .  .  .  .  .  .  .  .  .  .  .
+#  .  .  .  .  .  .  .  .  .  .  .  .  .  .
+#  .  .  .  .  .  .  .  .  .  .  .  .  .  .
+#  .  .  .  .  .  .  X  .  .  .  .  .  .  .
+#  .  .  .  .  .  .  .  .  .  .  0  .  .  .
+#  .  .  .  .  .  .  .  .  .  .  .  .  .  .
+#  .  .  .  .  .  .  .  .  .  .  .  .  .  .
+#  .  .  .  .  .  .  .  .  .  .  .  .  .  .
+#  .  .  .  .  .  .  .  .  .  .  .  .  .  .
+#  .  .  .  .  .  .  .  .  .  .  .  .  .  .
+#  .  .  .  .  .  .  .  .  .  .  .  .  .  .
+#  .  .  .  .  .  .  .  .  .  .  .  .  .  .
 		
 
 def grav():
@@ -98,16 +127,28 @@ def grav():
 				status[1] = status[1] + round((((status[1]-float(cur[1]))/dis)/float(cur[5])),2)
 				status[2] = status[2] + round((((status[2]-float(cur[2]))/dis)/float(cur[5])),2)
 
+
 def chkcrsh():
 	for cur in planets:
-		if status[0] == float(cur[0]):
-			if status[1] == float(cur[1]):
-				if status[2] == float(cur[2]):
-					if cur[4] <> "0":
+		if status[0] == int(cur[0]):
+			if status[1] == int(cur[1]):
+				if status[2] == int(cur[2]):
+					if cur[4] <> "0": # change this line to impliment landing. 0 = gas giant, 1 = habital, 2 = star\dangerous
 						crash(cur[3])
 
-def crash():
-	pass
+
+def crash(name):
+	clscn()
+	print "\n  Your crashed into %s." % name
+
+	save = open(sys.argv[1],'w')
+	save.write("0,0,0,0,0,0")
+	save.close()
+
+	# shutdown Game
+	stack.append("DIE")
+	sys.exit()
+
 
 def endGame():
 	clscn()
@@ -125,8 +166,12 @@ def endGame():
 	save.write(",")
 	save.write(str(status[5]))
 	save.close()
+
+	clscn()
+
 	stack.append("DIE")
 	sys.exit()
+
 
 def ckDie():
 	try:
@@ -135,11 +180,12 @@ def ckDie():
 			stack.append(tmp)
 			if tmp == "DIE":
 				sys.exit()
-	except UnboundLocalError:
+	except UnboundLocalError: # linchpin exception; do not remove
 		pass
 
 
-#######################################################################################
+
+###########################################################################################################################################
 
 
 
@@ -153,7 +199,7 @@ try:
 except:
 	# status = [pos_x, pos_y, pos_z, vel, theta_x, theta_y]
 	status = [      0,     0,     0,   0,       0,       0]
-	print "set"
+
 # import controls
 with open(sys.argv[2],'r') as argv_2:
 	for line in argv_2:
@@ -177,28 +223,25 @@ with open(sys.argv[4],'r') as argv_4:
 	planets = []
 	for line in argv_4:
 		tmp = line.strip().split(',')
-		if tmp[0] <> "0":
+		if tmp[3] <> "0":
 			planets.append(tmp)
 	argv_4.close()
+
+
 
 # declare and start threads
 thread.start_new_thread(ThreadingControl,())
 thread.start_new_thread(contr,())
-# thread.start_new_thread(disp,())
 
 # Start loop
-while loop:
-
+while True:
 	tim = time.clock()
-	# check Die
+
 	ckDie()
-	# move
 	move()
-	# gravity
-	grav()
-	# crash
 	chkcrsh()
-	# wait
+	grav()
+
 	while time.clock() - tim < 1:
 		pass
 	disp()
