@@ -16,6 +16,9 @@ pi = math.pi
 ###########################################################################################################################################
 
 
+def distance(x1,y1,z1,x2,y2,z2):
+	return math.sqrt((float(x1)-float(x2))*(float(x1)-float(x2))+(float(y1)-float(y2))*(float(y1)-float(y2))+(float(z1)-float(z2))*(float(z1)-float(z2)))
+
 # Thread function for controller, adds key to stack
 # Only works on windows machines
 def ThreadingControl():
@@ -30,9 +33,22 @@ def clscn():
 
 
 def move():
+
+
+	if status[6] < 0:
+		status[3]=0
+
+	old_status = [status[0],status[1],status[2]]
+
 	status[0] = round((float(status[3])*math.cos(float(status[5]))*math.cos(float(status[4]))),2)+float(status[0])
 	status[1] = round((float(status[3])*math.cos(float(status[5]))*math.sin(float(status[4]))),2)+float(status[1])
 	status[2] = round((float(status[3])*math.sin(float(status[5]))),2)+float(status[2])
+
+
+	if distance(old_status[0],old_status[1],old_status[2],status[0],status[1],status[2]) > 0.8:
+		if status[3] > 0:
+			status[6] = float(status[6]) - (0.1*float(status[3]))
+
 
 
 def contr():
@@ -52,8 +68,12 @@ def contr():
 			status[4] = float(status[4]) - int(settings[0])
 		if cmdp == controls[4]:
 			status[3] = float(status[3]) + 1.0
+			if status[6] < 0:
+				status[3]=0
 		if cmdp == controls[5]:
 			status[3] = float(status[3]) - 1.0
+			if status[6] < 0:
+				status[3]=0
 		if cmdp == controls[6]:
 			pass # ping command not yet written
 		if cmdp == controls[7]:
@@ -92,6 +112,8 @@ def disp():
 	print "  Velocity : [",
 	print status[3],
 	print "]\n"
+
+	print status[6]
 
 	while time.clock() - tim < 0:
 		pass
@@ -165,6 +187,8 @@ def endGame():
 	save.write(str(status[4]))
 	save.write(",")
 	save.write(str(status[5]))
+	save.write(",")
+	save.write(str(status[6]))
 	save.close()
 
 	clscn()
@@ -181,7 +205,7 @@ def ckDie():
 			if tmp == "DIE":
 				sys.exit()
 	except UnboundLocalError: # linchpin exception; do not remove
-		pass
+		pass		  # required for empty stack case
 
 
 
@@ -197,8 +221,8 @@ try:
 			status=line.strip().split(',')
 		argv_1.close()
 except:
-	# status = [pos_x, pos_y, pos_z, vel, theta_x, theta_y]
-	status = [      0,     0,     0,   0,       0,       0]
+	# status = [pos_x, pos_y, pos_z, vel, theta_x, theta_y, fual]
+	status = [      0,     0,     0,   0,       0,       0,100.0]
 
 # import controls
 with open(sys.argv[2],'r') as argv_2:
@@ -233,7 +257,8 @@ with open(sys.argv[4],'r') as argv_4:
 thread.start_new_thread(ThreadingControl,())
 thread.start_new_thread(contr,())
 
-# Start loop
+
+# Start main loop
 while True:
 	tim = time.clock()
 
