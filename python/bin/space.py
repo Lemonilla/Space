@@ -6,16 +6,33 @@ import time
 import os
 import sys
 import math
+import socket
 
 
 global stack
+ships = {}
+serverWait = True
 stack = ['.']
 pi = math.pi
+username = "Lemonilla"
+maxPlayer = 50
 
 
 ###########################################################################################################################################
 
-
+def dis(p1,p2,d):
+        if (d==1):
+                return p1[0]-p2[0]
+        if (d==2):
+                return math.sqrt((p1[0]-p2[0])*(p1[0]-p2[0])+(p1[1]-p2[1])*(p1[1]-p2[1]))
+        if (d==3):
+                return math.sqrt((p1[0]-p2[0])*(p1[0]-p2[0])+(p1[1]-p2[1])*(p1[1]-p2[1])+(p1[2]-p2[2])*(p1[2]-p2[2]))
+def redT(t):
+        if t > 2*math.pi:
+                t = t - 2*math.pi
+                t = redT(t)
+        return t
+        
 def distance(x1,y1,z1,x2,y2,z2):
 	return math.sqrt((float(x1)-float(x2))*(float(x1)-float(x2))+(float(y1)-float(y2))*(float(y1)-float(y2))+(float(z1)-float(z2))*(float(z1)-float(z2)))
 
@@ -26,11 +43,29 @@ def ThreadingControl():
 		TC_cmd = getch()
 		stack.append(TC_cmd)
 
+def serverConnection():
+	global ships
+	try:
+		server.sendall(str(status[0])+","+str(status[1])+","+str(status[2]))
+		ships = server.recv(1024)
+	except:
+		print "Connection Lost."
+		quit()
+	serverWait = False
+
 
 def clscn():
 	#return 0
 	os.system('cls')
 
+def checkLandingGear():
+	return
+	if bool(status[7]) == True:
+		if int(status[3]) > 1:
+			pass	# landing gear tear off
+
+def land():
+	pass
 
 def move():
 
@@ -48,7 +83,7 @@ def move():
 	if distance(old_status[0],old_status[1],old_status[2],status[0],status[1],status[2]) > 0.8:
 		if status[3] > 0:
 			status[6] = float(status[6]) - (0.1*float(status[3]))
-
+	checkLandingGear()
 
 
 def contr():
@@ -156,7 +191,11 @@ def chkcrsh():
 			if status[1] == int(cur[1]):
 				if status[2] == int(cur[2]):
 					if cur[4] <> "0": # change this line to impliment landing. 0 = gas giant, 1 = habital, 2 = star\dangerous
-						crash(cur[3])
+						
+						if bool(status[7]) <> True:
+							crash(cur[3])
+						else:
+							land()
 
 
 def crash(name):
@@ -204,8 +243,15 @@ def ckDie():
 			stack.append(tmp)
 			if tmp == "DIE":
 				sys.exit()
-	except UnboundLocalError: # linchpin exception; do not remove
-		pass		  # required for empty stack case
+	except UnboundLocalError:	# required for empty stack case
+		pass		  
+
+def orbit():
+	return None
+	# a = angle in radians
+	# cx,xy = center of circle
+	x = cx + r * cos(a)
+	y = cy + r * sin(a)
 
 
 
@@ -221,8 +267,8 @@ try:
 			status=line.strip().split(',')
 		argv_1.close()
 except:
-	# status = [pos_x, pos_y, pos_z, vel, theta_x, theta_y, fual]
-	status = [      0,     0,     0,   0,       0,       0,100.0]
+	# status = [pos_x, pos_y, pos_z, vel, theta_x, theta_y, fual,LandingGear]
+	status = [      0,     0,     0,   0,       0,       0,100.0,      False]
 
 # import controls
 with open(sys.argv[2],'r') as argv_2:
@@ -238,7 +284,7 @@ with open(sys.argv[3],'r') as argv_3:
 		settings=line.strip().split(',')
 	argv_3.close()
 	# Settings = [delta_theta, delay, display, wvec_lim, crash, orb_dis]
-	# Defaults 10,50,1,2,1,1
+	# Defaults 10,50,1,2,1,12
 
 # Import planets file into 2D Array named 'planets'
 # And strip commented lines for faster looping
@@ -252,21 +298,50 @@ with open(sys.argv[4],'r') as argv_4:
 	argv_4.close()
 
 
+def ServerControl():
+	global ships,serverWait
+	server.sendall(str(status[0])+","+str(status[1])+","+str(status[2]))
+	ret = server.recv(1000000)
+#	print str(ret)
+	# parse ret into a hashmap and replace ships
+	serverWait = False
+
+
+
+
+# connect to server
+for x in xrange(0,maxPlayer):
+	try:
+		print "\r                                    \r  Attempting socket %d" % (5000+x),
+		server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		server.connect(('localhost',5000+x))
+		port = 5000+x
+		break
+	except:
+		pass
+server.sendall(username)
+print ""
 
 # declare and start threads
 thread.start_new_thread(ThreadingControl,())
 thread.start_new_thread(contr,())
+thread.start_new_thread(ServerControl,())
+
 
 
 # Start main loop
+print "  Connected to port %d" % port
 while True:
 	tim = time.clock()
 
 	ckDie()
+	orbit()
 	move()
 	chkcrsh()
 	grav()
 
-	while time.clock() - tim < 1:
+	while serverWait:
+		serverConnection()
 		pass
+	serverWait = True
 	disp()
